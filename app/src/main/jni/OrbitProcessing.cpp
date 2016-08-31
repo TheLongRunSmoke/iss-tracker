@@ -40,6 +40,13 @@ jboolean Java_ru_tlrs_iss_MainActivity_tleProcessing(JNIEnv *env, jobject thiz,
 
     __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "%ld", satrec.satnum);
 
+    double ro[3], vo[3];
+    sgp4(wgs72old, satrec, 0.0, ro, vo);
+
+    for (int i = 0; i < 3; i++) {
+        __android_log_print(ANDROID_LOG_VERBOSE, APPNAME, "%lf", ro[i]);
+    }
+
     env->ReleaseStringUTFChars(tle, TLE_STRING);
     return 0;
 }
