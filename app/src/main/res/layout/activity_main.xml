@@ -30,4 +30,12 @@
         android:layout_height="wrap_content"
         android:text=""
         android:id="@+id/orbitalData"/>
+
+    <fragment
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:name="ru.tlrs.iss.Map"
+        android:id="@+id/fragment"
+        android:layout_gravity="center_horizontal"
+        tools:layout="@layout/fragment_map" />
 </LinearLayout>
