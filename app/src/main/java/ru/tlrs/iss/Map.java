@@ -1,9 +1,11 @@
 package ru.tlrs.iss;
 
 
+import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,9 +21,14 @@ import org.osmdroid.tileprovider.util.SimpleRegisterReceiver;
 import org.osmdroid.views.MapView;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 
 public class Map extends Fragment {
+
+    private static final String TAG = Map.class.getSimpleName();
 
     // Most of this is useless
     private XYTileSource MBTILESRENDER = new XYTileSource(
@@ -29,7 +36,6 @@ public class Map extends Fragment {
             0, 10,
             256, ".png", new String[] {});
 
-    private MapView mOsmv;
     private MapTileProviderArray mProvider;
 
     public Map() {
@@ -39,6 +45,7 @@ public class Map extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        unpackFromAssets("iss.mbtiles");
     }
 
     @Override
@@ -49,16 +56,20 @@ public class Map extends Fragment {
         org.osmdroid.tileprovider.constants.OpenStreetMapTileProviderConstants.setUserAgentValue(BuildConfig.APPLICATION_ID);
         MapView map = (MapView) view.findViewById(R.id.mapview);
         map.setUseDataConnection(false);
-        mapBeginConfig();
+        MapTileProviderArray provider = mapBeginConfig();
+        map.setTileProvider(provider);
+        map.setMinZoomLevel(1);
+        map.setMaxZoomLevel(4);
+        map.setMultiTouchControls(true);
         IMapController mapController = map.getController();
         mapController.setZoom(1);
         return view;
     }
 
-    private void mapBeginConfig(){
-        SimpleRegisterReceiver simpleReceiver = new SimpleRegisterReceiver(this);
+    private MapTileProviderArray mapBeginConfig(){
+        SimpleRegisterReceiver simpleReceiver = new SimpleRegisterReceiver(getActivity());
 
-        File f = new File(, "map.mbtiles");
+        File f = new File(Environment.getExternalStorageDirectory(), "/issabove/iss.mbtiles");
 
         IArchiveFile[] files = { MBTilesFileArchive.getDatabaseFileArchive(f) };
         MapTileModuleProviderBase moduleProvider = new MapTileFileArchiveProvider(simpleReceiver, MBTILESRENDER, files);
@@ -67,7 +78,33 @@ public class Map extends Fragment {
                 new MapTileModuleProviderBase[]{ moduleProvider }
         );
 
-        this.mOsmv = new MapView(this, 256, mResourceProxy, mProvider);
+        //MapView mOsmv = new MapView(getActivity(), mProvider, null);
+        return mProvider;
+    }
+
+    void unpackFromAssets(String fileName){
+        AssetManager assetManager = getActivity().getAssets();
+        InputStream in;
+        OutputStream out;
+        File dir = new File(Environment.getExternalStorageDirectory() + "/issabove");
+        if (!dir.exists()){
+            if (!dir.mkdir()) Log.e(TAG, "unpackFromAssets: Can't create directory: " + dir);
+        }
+        try{
+            in = assetManager.open(fileName);
+            String newFileName = Environment.getExternalStorageDirectory() + "/issabove/" + fileName;
+            out = new FileOutputStream(newFileName);
+            byte[] buffer = new byte[1024];
+            int read;
+            while((read = in.read(buffer)) != -1){
+                out.write(buffer, 0, read);
+            }
+            in.close();
+            out.flush();
+            out.close();
+        }catch (Exception ex){
+            Log.e(TAG, ex.getMessage());
+        }
 
     }
 
