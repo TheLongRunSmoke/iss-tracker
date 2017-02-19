@@ -12,7 +12,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    public final static String TLE = "1 25544U 98067A 16237.33327761 .00016717 00000-0 10270-3 0 9020\n2 25544 51.6431 77.9774 0003027 246.5903 113.4932 15.54303859 15589";
+    public final static String TLE = "1 25544U 98067A 17063.15557486 .00016717 00000-0 10270-3 0 9184\n2 25544 51.6422 201.8740 0007726 271.9848 88.0419 15.54051147 5418";
 
     private TextView tle, orbit;
 

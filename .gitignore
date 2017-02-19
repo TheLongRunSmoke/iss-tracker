@@ -23,6 +23,7 @@ gen-external-apklibs
 /local.properties
 /build
 /captures
+build/
 
 # Signing files
 .signing/

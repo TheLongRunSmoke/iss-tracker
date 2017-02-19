@@ -1,5 +1,5 @@
 //
-// Created by avarakosov on 24.08.2016.
+// Created by thelongrunsmoke on 24.08.2016.
 //
 #include <jni.h>
 
