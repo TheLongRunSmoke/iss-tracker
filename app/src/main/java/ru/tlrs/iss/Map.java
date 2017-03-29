@@ -5,22 +5,17 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import org.osmdroid.api.IMapController;
+import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.MapTileProviderArray;
-import org.osmdroid.tileprovider.modules.IArchiveFile;
-import org.osmdroid.tileprovider.modules.MBTilesFileArchive;
-import org.osmdroid.tileprovider.modules.MapTileFileArchiveProvider;
-import org.osmdroid.tileprovider.modules.MapTileModuleProviderBase;
-import org.osmdroid.tileprovider.tilesource.XYTileSource;
+import org.osmdroid.tileprovider.modules.OfflineTileProvider;
 import org.osmdroid.tileprovider.util.SimpleRegisterReceiver;
-import org.osmdroid.util.BoundingBoxE6;
+import org.osmdroid.util.BoundingBox;
 import org.osmdroid.views.MapView;
 
 import java.io.File;
@@ -28,15 +23,13 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import timber.log.Timber;
+
 
 public class Map extends Fragment {
 
-    private static final String TAG = Map.class.getSimpleName();
-
-    private static final String ATLAS_PATH = "asset";
+    private static final String ASSETS_PATH = "assets";
     private static final String ATLAS_FILENAME = "iss.mbtiles";
-
-    private XYTileSource MBTILESRENDER = new XYTileSource("iss", 1, 4, 256, ".png", new String[]{});
 
     public Map() {
         // Required empty public constructor
@@ -51,35 +44,30 @@ public class Map extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+        Configuration.getInstance().setOsmdroidTileCache(new File(getAssetsPath("cache.db")));
         View view = inflater.inflate(R.layout.fragment_map, container, false);
-        org.osmdroid.tileprovider.constants.OpenStreetMapTileProviderConstants.setUserAgentValue(BuildConfig.APPLICATION_ID);
         MapView map = (MapView) view.findViewById(R.id.mapview);
         map.setUseDataConnection(false);
-        MapTileProviderArray provider = mapBeginConfig();
-        map.setTileProvider(provider);
+        map.setTileProvider(mapBeginConfig());
         map.setMinZoomLevel(1);
         map.setMaxZoomLevel(4);
         map.setMultiTouchControls(true);
-        map.setScrollableAreaLimit(new BoundingBoxE6(90.0, 180.0, 90.0, 180.0));
-        //BoundingBoxE6 box = new BoundingBoxE6(map.getBoundingBox().getLatNorthE6());
-        //map.setScrollableAreaLimit(box);
+        map.setScrollableAreaLimitDouble(new BoundingBox(82, -180, -82, 180));
         IMapController mapController = map.getController();
-        mapController.setZoom(1);
+        mapController.setZoom(3);
         return view;
     }
 
     private MapTileProviderArray mapBeginConfig() {
         SimpleRegisterReceiver simpleReceiver = new SimpleRegisterReceiver(getActivity());
-
-        File f = new File(Environment.getExternalStorageDirectory(), "/" + ATLAS_PATH + "/" + ATLAS_FILENAME);
-
-        IArchiveFile[] files = {MBTilesFileArchive.getDatabaseFileArchive(f)};
-        MapTileModuleProviderBase moduleProvider = new MapTileFileArchiveProvider(simpleReceiver, MBTILESRENDER, files);
-
-        return new MapTileProviderArray(MBTILESRENDER, null,
-                new MapTileModuleProviderBase[]{moduleProvider}
-        );
+        File[] f = new File[]{new File(getAssetsPath(ATLAS_FILENAME))};
+        MapTileProviderArray providerArray = null;
+        try {
+            providerArray = new OfflineTileProvider(simpleReceiver, f);
+        } catch (Exception e) {
+            Timber.w("Can't create OfflineTileProvider." + e.getMessage());
+        }
+        return providerArray;
     }
 
     void unpackFromAssets(String fileName) {
@@ -87,13 +75,13 @@ public class Map extends Fragment {
             AssetManager assetManager = getActivity().getAssets();
             InputStream in;
             OutputStream out;
-            File dir = new File(Environment.getExternalStorageDirectory() + "/" + ATLAS_PATH);
+            File dir = new File(getAssetsPath(fileName));
             if (!dir.exists()) {
-                if (!dir.mkdir()) Log.e(TAG, "unpackFromAssets: Can't create directory: " + dir);
+                if (!dir.mkdir()) Timber.w("unpackFromAssets(): Can't create directory: " + dir);
             }
             try {
                 in = assetManager.open(fileName);
-                String newFileName = Environment.getExternalStorageDirectory() + "/" + ATLAS_PATH + "/" + fileName;
+                String newFileName = getAssetsPath(fileName);
                 out = new FileOutputStream(newFileName);
                 byte[] buffer = new byte[1024];
                 int read;
@@ -103,28 +91,33 @@ public class Map extends Fragment {
                 in.close();
                 out.flush();
                 out.close();
-            } catch (Exception ex) {
-                Log.e(TAG, ex.getMessage());
+            } catch (Exception e) {
+                Timber.d(e.getMessage());
             }
         }
     }
 
     private String getAppDirectory() {
+        String result = "";
         PackageManager m = getActivity().getPackageManager();
         String s = getActivity().getPackageName();
         PackageInfo p;
         try {
             p = m.getPackageInfo(s, 0);
-            return p.applicationInfo.dataDir;
+            result = p.applicationInfo.dataDir;
         } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
+            Timber.w("Package not found");
         }
-        return "";
+        Timber.d("getAppDirectory(): " + result);
+        return result;
     }
 
     private boolean isAssetExtracted(String fileName) {
-        String path = getAppDirectory();
-        File atlas = new File(path + "/" + ATLAS_PATH + "/" + fileName);
-        return atlas.exists();
+        File assets = new File(getAssetsPath(fileName));
+        return assets.exists();
+    }
+
+    private String getAssetsPath(String fileName){
+        return getAppDirectory() + "/" + ASSETS_PATH + ((fileName != null) ? ("/" + fileName) : "");
     }
 }
