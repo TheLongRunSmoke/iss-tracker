@@ -6,12 +6,12 @@
 #include <android/log.h>
 #include <string.h>
 
-#include "OrbitProcessing.h"
 #include "SGP4io.H"
 
-#define APPNAME "ru.tlrs.asciicam"
+#define APPNAME "ru.tlrs.iss"
 
 extern "C"
+
 jboolean Java_ru_tlrs_iss_MainActivity_tleProcessing(JNIEnv *env, jobject thiz,
                                                      jstring tle) {
 
