@@ -7,7 +7,7 @@
 
 class OrbitProcessing {
 public:
-    jboolean Java_ru_tlrs_iss_MainActivity_tleProcessing(JNIEnv *env, jobject thiz, jstring tle);
+    jboolean Java_ru_tlrs_iss_MainActivityold_tleProcessing(JNIEnv *env, jobject thiz, jstring tle);
 };
 
 #endif //ISS_TRACKER_ORBITPROCESSING_H

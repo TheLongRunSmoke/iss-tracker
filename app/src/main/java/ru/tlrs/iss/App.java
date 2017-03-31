@@ -1,15 +1,19 @@
 package ru.tlrs.iss;
 
 import android.app.Application;
+import android.content.Context;
 import android.util.Log;
 
 import timber.log.Timber;
 
 public class App extends Application {
 
+    private static Context mAppContext;
+
     @Override
     public void onCreate() {
         super.onCreate();
+        mAppContext = this.getApplicationContext();
         if (BuildConfig.DEBUG) {
             Timber.plant(new Timber.DebugTree());
         } else {
@@ -36,5 +40,9 @@ public class App extends Application {
                 }
             }*/
         }
+    }
+
+    public static Context getAppContext(){
+        return App.mAppContext;
     }
 }

@@ -3,10 +3,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="ru.tlrs.iss.Map">
+    tools:context="ru.tlrs.iss.fragments.MapFragment">
 
     <org.osmdroid.views.MapView
-        android:id="@+id/mapview"
+        android:id="@+id/mapView"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 

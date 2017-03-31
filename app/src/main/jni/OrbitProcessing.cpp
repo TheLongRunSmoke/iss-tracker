@@ -12,7 +12,7 @@
 #define APPNAME "ru.tlrs.asciicam"
 
 extern "C"
-jboolean Java_ru_tlrs_iss_MainActivity_tleProcessing(JNIEnv *env, jobject thiz,
+jboolean Java_ru_tlrs_iss_MainActivityold_tleProcessing(JNIEnv *env, jobject thiz,
                                                      jstring tle) {
 
     const char *TLE_STRING = env->GetStringUTFChars(tle, 0);
