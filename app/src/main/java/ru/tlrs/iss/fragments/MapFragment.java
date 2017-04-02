@@ -58,16 +58,8 @@ public class MapFragment extends Fragment {
         mMap.setScrollableAreaLimitDouble(new BoundingBox(82, -180, -82, 180));    // Let map to loop scroll along longitude, but constrain in latitude.
         IMapController mapController = mMap.getController();
         mapController.setZoom(4);
-        // TODO: 3 is not enough on 10 inch display. @thelongrunsmoke 29/03/17
         getLocation();
         return view;
-    }
-
-    private void getLocation() {
-        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(getActivity(),
-                    new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, COARSE_LOCATION_PERMISSION_REQUEST);
-        }
     }
 
     /**
@@ -87,18 +79,37 @@ public class MapFragment extends Fragment {
         return providerArray;
     }
 
+    /**
+     * Make permission request.
+     */
+    private void getLocation() {
+        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, COARSE_LOCATION_PERMISSION_REQUEST);
+        }
+    }
+
+    /**
+     * When permission granted proceed to receiving location.
+     */
+    private void locationPermissionGranted(){
+        LocationManager.getInstance();
+    }
+
+    /**
+     * Show dialog and request permission again.
+     */
+    private void locationPermissionDenied(){
+
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         switch (requestCode) {
             case COARSE_LOCATION_PERMISSION_REQUEST: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    LocationManager.getInstance();
-
+                    locationPermissionGranted();
                 } else {
-
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
+                    locationPermissionDenied();
                 }
             }
         }

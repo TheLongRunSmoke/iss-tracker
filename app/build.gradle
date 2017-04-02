@@ -11,6 +11,7 @@ model {
             targetSdkVersion.apiLevel = 25
             versionCode 1
             versionName "1.0"
+            vectorDrawables.useSupportLibrary = true
         }
         ndk {
             moduleName = "OrbitProcessing"
@@ -37,6 +38,7 @@ dependencies {
     compile 'com.jakewharton:butterknife:8.5.1'
     compile 'com.android.support:design:25.3.1'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    compile 'com.android.support:support-vector-drawable:25.3.1'
     testCompile 'junit:junit:4.12'
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.5.1'
 }
