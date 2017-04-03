@@ -3,6 +3,8 @@ package ru.tlrs.iss.fragments;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -18,15 +20,20 @@ import org.osmdroid.tileprovider.MapTileProviderArray;
 import org.osmdroid.tileprovider.modules.OfflineTileProvider;
 import org.osmdroid.tileprovider.util.SimpleRegisterReceiver;
 import org.osmdroid.util.BoundingBox;
+import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.ItemizedIconOverlay;
+import org.osmdroid.views.overlay.ItemizedOverlayWithFocus;
+import org.osmdroid.views.overlay.OverlayItem;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import ru.tlrs.iss.R;
 import ru.tlrs.iss.utils.AssetsManager;
-import ru.tlrs.iss.utils.LocationManager;
+import ru.tlrs.iss.utils.LocationManagerHelper;
 import timber.log.Timber;
 
 
@@ -52,12 +59,13 @@ public class MapFragment extends Fragment {
         // Config map.
         mMap.setUseDataConnection(false);
         mMap.setTileProvider(mapConfig());
-        mMap.setMinZoomLevel(4);
+        mMap.setMinZoomLevel(3);
         mMap.setMaxZoomLevel(4);
         mMap.setMultiTouchControls(true);
         mMap.setScrollableAreaLimitDouble(new BoundingBox(82, -180, -82, 180));    // Let map to loop scroll along longitude, but constrain in latitude.
         IMapController mapController = mMap.getController();
-        mapController.setZoom(4);
+        mapController.setZoom(3);
+        mapController.animateTo(new GeoPoint((double) 0, (double) 0));
         getLocation();
         return view;
     }
@@ -85,21 +93,34 @@ public class MapFragment extends Fragment {
     private void getLocation() {
         if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, COARSE_LOCATION_PERMISSION_REQUEST);
+        } else {
+            locationPermissionGranted();
         }
     }
 
-    /**
-     * When permission granted proceed to receiving location.
-     */
-    private void locationPermissionGranted(){
-        LocationManager.getInstance();
-    }
+    private void drawLocation(){
+        Timber.d("drawLocation()");
+        Location location = LocationManagerHelper.getInstance().getCurrentLocation();
+        if (location != null) {
+            //your items
+            ArrayList<OverlayItem> items = new ArrayList<>();
+            items.add(new OverlayItem("","",new GeoPoint(location))); // Lat/Lon decimal degrees
 
-    /**
-     * Show dialog and request permission again.
-     */
-    private void locationPermissionDenied(){
+            ItemizedOverlayWithFocus<OverlayItem> mOverlay = new ItemizedOverlayWithFocus<>(getActivity(), items, new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
+                @Override
+                public boolean onItemSingleTapUp(final int index, final OverlayItem item) {
+                    //do something
+                    return true;
+                }
 
+                @Override
+                public boolean onItemLongPress(final int index, final OverlayItem item) {
+                    return false;
+                }
+            });
+            mOverlay.setFocusItemsOnTap(true);
+            mMap.getOverlays().add(0, mOverlay);
+        }
     }
 
     @Override
@@ -111,7 +132,28 @@ public class MapFragment extends Fragment {
                 } else {
                     locationPermissionDenied();
                 }
+                break;
             }
         }
+    }
+
+    /**
+     * When permission granted proceed to receiving location.
+     */
+    private void locationPermissionGranted() {
+        drawLocation();
+        LocationManagerHelper.getInstance().setLocationChangeListener(new LocationManagerHelper.OnLocationChangeListener() {
+            @Override
+            public void onLocationChange(Location location) {
+                drawLocation();
+            }
+        });
+    }
+
+    /**
+     * Show dialog and request permission again.
+     */
+    private void locationPermissionDenied() {
+
     }
 }
