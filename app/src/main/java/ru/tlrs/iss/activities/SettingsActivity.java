@@ -57,11 +57,11 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
 
     protected boolean isValidFragment(String fragmentName) {
         return PreferenceFragment.class.getName().equals(fragmentName)
-                || GeneralPreferenceFragment.class.getName().equals(fragmentName)
+                || LocationPreferenceFragment.class.getName().equals(fragmentName)
                 || NotificationPreferenceFragment.class.getName().equals(fragmentName);
     }
 
-    public static class GeneralPreferenceFragment extends PreferenceListenerFragment{
+    public static class LocationPreferenceFragment extends PreferenceListenerFragment{
 
         public static final String LAT = "latitude";
         public static final String LONG = "longitude";
@@ -71,8 +71,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            PreferenceManager.setDefaultValues(getActivity(), R.xml.pref_general, false);
-            addPreferencesFromResource(R.xml.pref_general);
+            PreferenceManager.setDefaultValues(getActivity(), R.xml.pref_location, false);
+            addPreferencesFromResource(R.xml.pref_location);
             setHasOptionsMenu(true);
             bindPreferenceSummaryToValue(findPreference(LAT), this);
             bindPreferenceSummaryToValue(findPreference(LONG), this);
@@ -82,8 +82,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         @Override
         public boolean onPreferenceChange(final Preference preference, Object newValue) {
             boolean result = true;
+            String value = newValue.toString();
             if (TextUtils.equals(preference.getKey(), LAT)) {
-                if (abs(Double.parseDouble(newValue.toString())) >= 82) {
+                double absValue = abs(Double.parseDouble(value));
+                if (absValue >= 82 || absValue == 0) {
                     result = false;
                     DialogHelper.createOKDialog(getActivity(), R.string.latitude_error_message, new DialogInterface.OnClickListener() {
                         @Override
@@ -93,7 +95,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                     }).show();
                 }
             }else if (TextUtils.equals(preference.getKey(), LONG)){
-                if (abs(Double.parseDouble(newValue.toString())) >= 180) {
+                double absValue = abs(Double.parseDouble(value));
+                if (abs(Double.parseDouble(value)) >= 180 || absValue == 0) {
                     result = false;
                     DialogHelper.createOKDialog(getActivity(), R.string.longitude_error_message, new DialogInterface.OnClickListener() {
                         @Override

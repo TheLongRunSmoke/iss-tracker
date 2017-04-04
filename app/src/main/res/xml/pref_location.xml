@@ -1,6 +1,15 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
     <PreferenceCategory android:title="@string/location_label">
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="use_location"
+            android:title="@string/use_location_label" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/coordinates_label"
+        android:dependency="use_location">
 
         <EditTextPreference
             android:defaultValue="0"
@@ -19,16 +28,14 @@
             android:selectAllOnFocus="true"
             android:singleLine="true"
             android:title="@string/longitude_label" />
-
-    </PreferenceCategory>
-
-    <ListPreference
-        android:defaultValue="0"
-        android:entries="@array/location_update_list_titles"
-        android:entryValues="@array/location_update_list_values"
-        android:key="location_update"
-        android:negativeButtonText="@null"
-        android:positiveButtonText="@null"
-        android:title="@string/title_location_update" />
+        <ListPreference
+            android:defaultValue="0"
+            android:entries="@array/location_update_list_titles"
+            android:entryValues="@array/location_update_list_values"
+            android:key="location_update"
+            android:negativeButtonText="@null"
+            android:positiveButtonText="@null"
+            android:title="@string/title_location_update" />
+        </PreferenceCategory>
 
 </PreferenceScreen>
