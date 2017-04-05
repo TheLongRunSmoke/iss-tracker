@@ -15,7 +15,6 @@
     <string name="nav_about">About</string>
 
     <!-- Settings -->
-    <string name="pref_header_general">General</string>
     <string name="location_label">Location</string>
     <string name="use_location_label">Use my location</string>
     <string name="coordinates_label">Coordinates</string>
@@ -25,7 +24,7 @@
     <string name="longitude_error_message">Enter longitude in decimal format. Must not exceed 180. Use \"-\" for west long.</string>
     <string name="title_location_update">Update location</string>
     <string-array name="location_update_list_titles">
-        <item>On app startup</item>
+        <item>When needed</item>
         <item>Never</item>
     </string-array>
     <string-array name="location_update_list_values">

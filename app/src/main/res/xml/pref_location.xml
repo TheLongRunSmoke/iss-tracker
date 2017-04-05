@@ -3,18 +3,19 @@
     <PreferenceCategory android:title="@string/location_label">
         <SwitchPreference
             android:defaultValue="true"
-            android:key="use_location"
+            android:key="@string/pref_use_location"
             android:title="@string/use_location_label" />
     </PreferenceCategory>
 
     <PreferenceCategory
         android:title="@string/coordinates_label"
-        android:dependency="use_location">
+        android:dependency="@string/pref_use_location">
 
+        <!--TODO: make own pref for coordinates. @thelongrunsmoke 04/05/2017-->
         <EditTextPreference
             android:defaultValue="0"
             android:inputType="numberSigned|numberDecimal"
-            android:key="latitude"
+            android:key="@string/pref_latitude"
             android:maxLines="1"
             android:selectAllOnFocus="true"
             android:singleLine="true"
@@ -23,7 +24,7 @@
         <EditTextPreference
             android:defaultValue="0"
             android:inputType="numberSigned|numberDecimal"
-            android:key="longitude"
+            android:key="@string/pref_longitude"
             android:maxLines="1"
             android:selectAllOnFocus="true"
             android:singleLine="true"
@@ -32,7 +33,7 @@
             android:defaultValue="0"
             android:entries="@array/location_update_list_titles"
             android:entryValues="@array/location_update_list_values"
-            android:key="location_update"
+            android:key="@string/pref_location_update"
             android:negativeButtonText="@null"
             android:positiveButtonText="@null"
             android:title="@string/title_location_update" />

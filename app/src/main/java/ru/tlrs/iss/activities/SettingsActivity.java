@@ -85,7 +85,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             String value = newValue.toString();
             if (TextUtils.equals(preference.getKey(), LAT)) {
                 double absValue = abs(Double.parseDouble(value));
-                if (absValue >= 82 || absValue == 0) {
+                if (absValue >= 82) {
                     result = false;
                     DialogHelper.createOKDialog(getActivity(), R.string.latitude_error_message, new DialogInterface.OnClickListener() {
                         @Override
@@ -96,7 +96,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 }
             }else if (TextUtils.equals(preference.getKey(), LONG)){
                 double absValue = abs(Double.parseDouble(value));
-                if (abs(Double.parseDouble(value)) >= 180 || absValue == 0) {
+                if (abs(absValue) >= 180) {
                     result = false;
                     DialogHelper.createOKDialog(getActivity(), R.string.longitude_error_message, new DialogInterface.OnClickListener() {
                         @Override

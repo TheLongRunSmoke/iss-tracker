@@ -4,7 +4,6 @@ package ru.tlrs.iss.fragments;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -31,9 +30,10 @@ import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import ru.tlrs.iss.Config;
 import ru.tlrs.iss.R;
 import ru.tlrs.iss.utils.AssetsManager;
-import ru.tlrs.iss.utils.LocationManagerHelper;
+import ru.tlrs.iss.utils.LocationProvider;
 import timber.log.Timber;
 
 
@@ -58,7 +58,7 @@ public class MapFragment extends Fragment {
         ButterKnife.bind(this, view);
         // Config map.
         mMap.setUseDataConnection(false);
-        mMap.setTileProvider(mapConfig());
+        mMap.setTileProvider(configTileSource());
         mMap.setMinZoomLevel(3);
         mMap.setMaxZoomLevel(4);
         mMap.setMultiTouchControls(true);
@@ -75,7 +75,7 @@ public class MapFragment extends Fragment {
      *
      * @return MapTileProviderArray.
      */
-    private MapTileProviderArray mapConfig() {
+    private MapTileProviderArray configTileSource() {
         AssetsManager.unpackFromAssets(ATLAS_FILENAME);
         File[] f = new File[]{new File(AssetsManager.getAssetsPath(ATLAS_FILENAME))};
         MapTileProviderArray providerArray = null;
@@ -88,25 +88,28 @@ public class MapFragment extends Fragment {
     }
 
     /**
-     * Make permission request.
+     * Check permission and run location routing.
      */
     private void getLocation() {
-        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, COARSE_LOCATION_PERMISSION_REQUEST);
-        } else {
-            locationPermissionGranted();
+        if (Config.getInstance().isLocationUseEnable()) {
+            // If location unknown or needs to be update.
+            if (Config.getInstance().getSavedLocation() == null || Config.getInstance().isUpdateLocation()) {
+                if (isPermissionGranted(Manifest.permission.ACCESS_COARSE_LOCATION)) {
+                    locationPermissionGranted();
+                } else {
+                    ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, COARSE_LOCATION_PERMISSION_REQUEST);
+                }
+            }
         }
     }
 
-    private void drawLocation(){
+    private void drawLocation(Location location){
         Timber.d("drawLocation()");
-        Location location = LocationManagerHelper.getInstance().getCurrentLocation();
         if (location != null) {
-            //your items
             ArrayList<OverlayItem> items = new ArrayList<>();
-            items.add(new OverlayItem("","",new GeoPoint(location))); // Lat/Lon decimal degrees
+            items.add(new OverlayItem("","",new GeoPoint(location)));
 
-            ItemizedOverlayWithFocus<OverlayItem> mOverlay = new ItemizedOverlayWithFocus<>(getActivity(), items, new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
+            ItemizedOverlayWithFocus<OverlayItem> mOverlay = new  ItemizedOverlayWithFocus<>(getActivity(), items, new ItemizedIconOverlay.OnItemGestureListener<OverlayItem>() {
                 @Override
                 public boolean onItemSingleTapUp(final int index, final OverlayItem item) {
                     //do something
@@ -137,23 +140,35 @@ public class MapFragment extends Fragment {
         }
     }
 
+    private boolean isPermissionGranted(String permission){
+        return ContextCompat.checkSelfPermission(getActivity(), permission) == PackageManager.PERMISSION_GRANTED;
+    }
+
     /**
      * When permission granted proceed to receiving location.
      */
     private void locationPermissionGranted() {
-        drawLocation();
-        LocationManagerHelper.getInstance().setLocationChangeListener(new LocationManagerHelper.OnLocationChangeListener() {
-            @Override
-            public void onLocationChange(Location location) {
-                drawLocation();
-            }
-        });
+        Timber.d("locationPermissionGranted()");
+        if (LocationProvider.getInstance().isProviderEnabled()){
+            Location location = LocationProvider.getInstance().getCurrentLocation();
+            if (location != null) drawLocation(location);
+            LocationProvider.getInstance().setLocationChangeListener(new LocationProvider.OnLocationChangeListener() {
+                @Override
+                public void onLocationChange(Location location) {
+                    drawLocation(location);
+                }
+            });
+            LocationProvider.getInstance().requestUpdate();
+        }else {
+//            startActivityForResult(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS), 0);
+            Timber.d("locationPermissionGranted(): provider disabled");
+        }
     }
 
     /**
      * Show dialog and request permission again.
      */
     private void locationPermissionDenied() {
-
+        //DialogHelper.createTwoButtonDialog();
     }
 }

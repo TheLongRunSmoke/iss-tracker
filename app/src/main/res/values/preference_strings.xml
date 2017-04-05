@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--Location-->
+    <string name="pref_use_location">use_location</string>
+    <string name="pref_latitude">latitude</string>
+    <string name="pref_longitude">longitude</string>
+    <string name="pref_location_update">location_update</string>
+</resources>
