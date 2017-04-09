@@ -12,6 +12,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 
 import java.util.Locale;
+import java.util.Random;
 
 import ru.tlrs.iss.App;
 import ru.tlrs.iss.BuildConfig;
@@ -44,7 +45,6 @@ public final class LocationProvider {
     private LocationProvider() {
         mLocationManager = (LocationManager) App.getAppContext().getSystemService(Context.LOCATION_SERVICE);
         mListener = new NetworkLocationListener();
-        if (BuildConfig.DEBUG) mockLocation();
         if (isPermissionGranted())
             setCurrentLocation(mLocationManager.getLastKnownLocation(LOCATION_MANAGER));
     }
@@ -53,6 +53,7 @@ public final class LocationProvider {
         if (isPermissionGranted()) {
             Timber.d("requestUpdate()");
             mLocationManager.requestLocationUpdates(LOCATION_MANAGER, 0, 0, mListener);
+            if (BuildConfig.DEBUG) mockLocation();
         }
     }
 
@@ -63,7 +64,7 @@ public final class LocationProvider {
 
     public Location getCurrentLocation() {
         Location result = (mCurrentLocation == null) ? Config.getInstance().getSavedLocation() : mCurrentLocation;
-        if (result == null){
+        if (result == null) {
             Timber.d("getCurrentLocation(): null");
             return null;
         }
@@ -72,7 +73,7 @@ public final class LocationProvider {
     }
 
     private void setCurrentLocation(Location location) {
-        if (location == null ) {
+        if (location == null) {
             Timber.d("setCurrentLocation(): null");
             return;
         }
@@ -91,11 +92,12 @@ public final class LocationProvider {
 
     private void mockLocation() {
         Timber.d("mockLocation()");
+        Random random = new Random();
         try {
             mLocationManager.addTestProvider(LOCATION_MANAGER, false, false, true, false, false, false, false, 0, 10);
             Location mockLocation = new Location(LOCATION_MANAGER);
-            mockLocation.setLatitude(55);
-            mockLocation.setLongitude(0);
+            mockLocation.setLatitude(random.nextBoolean() ? 82 * random.nextDouble() : -82 * random.nextDouble());
+            mockLocation.setLongitude(random.nextBoolean() ? 180 * random.nextDouble() : -180 * random.nextDouble());
             mockLocation.setAccuracy(8);
             mockLocation.setTime(System.currentTimeMillis() / 1000);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {

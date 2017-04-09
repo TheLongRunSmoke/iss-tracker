@@ -4,6 +4,7 @@ package ru.tlrs.iss.activities;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.location.Location;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
@@ -15,6 +16,8 @@ import android.view.MenuItem;
 
 import java.util.List;
 
+import ru.tlrs.iss.App;
+import ru.tlrs.iss.Config;
 import ru.tlrs.iss.R;
 import ru.tlrs.iss.dialogs.DialogHelper;
 import ru.tlrs.iss.fragments.PreferenceListenerFragment;
@@ -61,11 +64,14 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 || NotificationPreferenceFragment.class.getName().equals(fragmentName);
     }
 
+    /**
+     * Location preference.
+     */
     public static class LocationPreferenceFragment extends PreferenceListenerFragment{
 
-        public static final String LAT = "latitude";
-        public static final String LONG = "longitude";
-        public static final String UPDATE = "location_update";
+        public static final String LAT = App.getAppContext().getResources().getString(R.string.pref_latitude);
+        public static final String LONG = App.getAppContext().getResources().getString(R.string.pref_longitude);
+        public static final String UPDATE = App.getAppContext().getResources().getString(R.string.pref_location_update);
 
 
         @Override
@@ -80,12 +86,13 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         }
 
         @Override
-        public boolean onPreferenceChange(final Preference preference, Object newValue) {
+        public boolean onPreferenceChange(final Preference preference, Object value) {
             boolean result = true;
-            String value = newValue.toString();
+            String newValue = value.toString();
+            Location savedLocation = Config.getInstance().getSavedLocation();
             if (TextUtils.equals(preference.getKey(), LAT)) {
-                double absValue = abs(Double.parseDouble(value));
-                if (absValue >= 82) {
+                double absValue = abs(Double.parseDouble(newValue));
+                if (absValue > 82) {
                     result = false;
                     DialogHelper.createOKDialog(getActivity(), R.string.latitude_error_message, new DialogInterface.OnClickListener() {
                         @Override
@@ -93,10 +100,17 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                             performClick(preference);
                         }
                     }).show();
+                }else {
+                    if (savedLocation != null) {
+                        if (savedLocation.getLatitude() != Double.parseDouble(newValue)) {
+                            disableLocationUpdate();
+                            updatePreferenceSummary(findPreference(UPDATE));
+                        }
+                    }
                 }
             }else if (TextUtils.equals(preference.getKey(), LONG)){
-                double absValue = abs(Double.parseDouble(value));
-                if (abs(absValue) >= 180) {
+                double absValue = abs(Double.parseDouble(newValue));
+                if (abs(absValue) > 180) {
                     result = false;
                     DialogHelper.createOKDialog(getActivity(), R.string.longitude_error_message, new DialogInterface.OnClickListener() {
                         @Override
@@ -104,9 +118,16 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                             performClick(preference);
                         }
                     }).show();
+                }else {
+                    if (savedLocation != null) {
+                        if (savedLocation.getLongitude() != Double.parseDouble(newValue)) {
+                            disableLocationUpdate();
+                            updatePreferenceSummary(findPreference(UPDATE));
+                        }
+                    }
                 }
             }
-            if (result) super.onPreferenceChange(preference, newValue);
+            if (result) super.onPreferenceChange(preference, value);
             return result;
         }
 
@@ -118,6 +139,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 return true;
             }
             return super.onOptionsItemSelected(item);
+        }
+
+        private void disableLocationUpdate(){
+            Config.getInstance().setLocationUpdateOnStartup(false);
         }
     }
 

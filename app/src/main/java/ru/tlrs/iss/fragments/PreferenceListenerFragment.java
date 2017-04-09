@@ -9,11 +9,6 @@ import ru.tlrs.iss.Config;
 
 public class PreferenceListenerFragment extends PreferenceFragment implements Preference.OnPreferenceChangeListener {
 
-    protected static void bindPreferenceSummaryToValue(Preference preference, Preference.OnPreferenceChangeListener listener) {
-        preference.setOnPreferenceChangeListener(listener);
-        listener.onPreferenceChange(preference, Config.getInstance().getPreferences().getString(preference.getKey(), ""));
-    }
-
     protected void performClick(Preference preference){
         ListAdapter listAdapter = getPreferenceScreen().getRootAdapter();
         for (int itemNumber = 0; itemNumber < listAdapter.getCount(); itemNumber++)
@@ -79,4 +74,12 @@ public class PreferenceListenerFragment extends PreferenceFragment implements Pr
 
     }
 
+    protected static void bindPreferenceSummaryToValue(Preference preference, Preference.OnPreferenceChangeListener listener) {
+        preference.setOnPreferenceChangeListener(listener);
+        listener.onPreferenceChange(preference, Config.getInstance().getPreferences().getString(preference.getKey(), ""));
+    }
+
+    public void updatePreferenceSummary(Preference preference){
+        onPreferenceChange(preference, Config.getInstance().getPreferences().getString(preference.getKey(), ""));
+    }
 }
