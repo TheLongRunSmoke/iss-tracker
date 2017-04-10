@@ -2,14 +2,16 @@ package ru.tlrs.iss.fragments;
 
 
 import android.Manifest;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.preference.PreferenceActivity;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.util.TimeUtils;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,7 +25,6 @@ import org.osmdroid.util.BoundingBox;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.ItemizedIconOverlay;
-import org.osmdroid.views.overlay.ItemizedOverlayWithFocus;
 import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.OverlayItem;
 
@@ -35,6 +36,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import ru.tlrs.iss.Config;
 import ru.tlrs.iss.R;
+import ru.tlrs.iss.activities.SettingsActivity;
 import ru.tlrs.iss.dialogs.DialogHelper;
 import ru.tlrs.iss.utils.AssetsManager;
 import ru.tlrs.iss.utils.LocationProvider;
@@ -47,7 +49,10 @@ public class MapFragment extends Fragment {
     MapView mMap;
 
     private static final String ATLAS_FILENAME = "iss.mbtiles";
+
+    // Request constants
     private static final int COARSE_LOCATION_PERMISSION_REQUEST = 1;
+    private static final int PROVIDER_ENABLE_REQUEST = 2;
 
     public MapFragment() {
         // Required empty public constructor
@@ -102,16 +107,21 @@ public class MapFragment extends Fragment {
                 if (isPermissionGranted(Manifest.permission.ACCESS_COARSE_LOCATION)) {
                     locationPermissionGranted();
                 } else {
-                    ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, COARSE_LOCATION_PERMISSION_REQUEST);
+                    requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, COARSE_LOCATION_PERMISSION_REQUEST);
                 }
             } else {
-                drawLocation(Config.getInstance().getSavedLocation());
+                drawUserLocation(Config.getInstance().getSavedLocation());
             }
         }
     }
 
-    private void drawLocation(Location location) {
-        Timber.d("drawLocation()");
+    /**
+     * Create or update map overlay with marker in user location.
+     *
+     * @param location user location.
+     */
+    private void drawUserLocation(Location location) {
+        Timber.d("drawUserLocation()");
         if (location != null) {
             ArrayList<OverlayItem> items = new ArrayList<>();
             GeoPoint user = new GeoPoint(location);
@@ -127,9 +137,22 @@ public class MapFragment extends Fragment {
         }
     }
 
+    /**
+     *  Animated zoom to specified coordinate.
+     *
+     * @param location location.
+     */
     private void zoomToUserLocation(Location location) {
         IMapController mapController = mMap.getController();
         mapController.animateTo(new GeoPoint(location));
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // Catch user returned from system settings, after enabling location provider,
+        if (requestCode == PROVIDER_ENABLE_REQUEST){
+            getLocation();
+        }
     }
 
     @Override
@@ -146,6 +169,12 @@ public class MapFragment extends Fragment {
         }
     }
 
+    /**
+     * Check specified permission.
+     *
+     * @param permission name from Manifest.permission.
+     * @return true if permission granted.
+     */
     private boolean isPermissionGranted(String permission) {
         return ContextCompat.checkSelfPermission(getActivity(), permission) == PackageManager.PERMISSION_GRANTED;
     }
@@ -157,17 +186,24 @@ public class MapFragment extends Fragment {
         Timber.d("locationPermissionGranted()");
         if (LocationProvider.getInstance().isProviderEnabled()) {
             Location location = LocationProvider.getInstance().getCurrentLocation();
-            if (location != null) drawLocation(location);
+            if (location != null) drawUserLocation(location);
             LocationProvider.getInstance().setLocationChangeListener(new LocationProvider.OnLocationChangeListener() {
                 @Override
                 public void onLocationChange(Location location) {
-                    drawLocation(location);
+                    drawUserLocation(location);
                 }
             });
             LocationProvider.getInstance().requestUpdate();
         } else {
-//            startActivityForResult(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS), 0);
             Timber.d("locationPermissionGranted(): provider disabled");
+            AlertDialog dialog = DialogHelper.createOKDialog(getActivity(), R.string.dialog_provider_disabled_message, new DialogInterface.OnClickListener(){
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    startActivityForResult(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS), PROVIDER_ENABLE_REQUEST);
+                }
+            });
+            dialog.setCancelable(false);
+            dialog.show();
         }
     }
 
@@ -175,6 +211,21 @@ public class MapFragment extends Fragment {
      * Show dialog and request permission again.
      */
     private void locationPermissionDenied() {
-        DialogHelper.createTwoButtonDialog(getActivity(), );
+        DialogHelper.createTwoButtonDialog(getActivity(), R.string.dialog_perm_denied_message,
+                R.string.dialog_perm_denied_positive, R.string.dialog_perm_denied_negative, new DialogInterface.OnClickListener() {
+                    // Positive button
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Try to obtain permission, again.
+                        getLocation();
+                    }
+                }, new DialogInterface.OnClickListener() {
+                    // Negative button
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Send user to location preference.
+                        startActivity(new Intent(getActivity(), SettingsActivity.class).putExtra(PreferenceActivity.EXTRA_SHOW_FRAGMENT, SettingsActivity.LocationPreferenceFragment.class.getName()));
+                    }
+                }).show();
     }
 }

@@ -49,6 +49,9 @@ public final class LocationProvider {
             setCurrentLocation(mLocationManager.getLastKnownLocation(LOCATION_MANAGER));
     }
 
+    /**
+     * Setup LocationListener. In debug, mock.
+     */
     public void requestUpdate() {
         if (isPermissionGranted()) {
             Timber.d("requestUpdate()");
@@ -57,11 +60,21 @@ public final class LocationProvider {
         }
     }
 
+    /**
+     * Check location provider status.
+     *
+     * @return true if enable.
+     */
     public boolean isProviderEnabled() {
         Timber.d("isProviderEnabled(): " + mLocationManager.isProviderEnabled(LOCATION_MANAGER));
         return mLocationManager.isProviderEnabled(LOCATION_MANAGER);
     }
 
+    /**
+     * Try to obtain user location, if provider return null, use saved location.
+     *
+     * @return user location, can be null.
+     */
     public Location getCurrentLocation() {
         Location result = (mCurrentLocation == null) ? Config.getInstance().getSavedLocation() : mCurrentLocation;
         if (result == null) {
@@ -72,6 +85,11 @@ public final class LocationProvider {
         return result;
     }
 
+    /**
+     * Set current location and update saved.
+     *
+     * @param location user location.
+     */
     private void setCurrentLocation(Location location) {
         if (location == null) {
             Timber.d("setCurrentLocation(): null");
@@ -82,14 +100,27 @@ public final class LocationProvider {
         Config.getInstance().setSavedLocation(location);
     }
 
+    /**
+     * Set location change callback.
+     *
+     * @param listener callback.
+     */
     public void setLocationChangeListener(OnLocationChangeListener listener) {
         this.mCallback = listener;
     }
 
+    /**
+     * Check coarse location permission.
+     *
+     * @return true if granted.
+     */
     private boolean isPermissionGranted() {
         return ContextCompat.checkSelfPermission(App.getAppContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
 
+    /**
+     * Mock location for test purposes. Mock new value on each run.
+     */
     private void mockLocation() {
         Timber.d("mockLocation()");
         Random random = new Random();
@@ -113,6 +144,9 @@ public final class LocationProvider {
      * Interfaces
      */
 
+    /**
+     * Interface for location change callback.
+     */
     public interface OnLocationChangeListener {
         void onLocationChange(Location location);
     }
@@ -121,8 +155,11 @@ public final class LocationProvider {
      * Dev-time exceptions.
      */
 
+    /**
+     * Remember developer about mock in dev menu.
+     */
     private class MockNotAllowedException extends RuntimeException {
-        public MockNotAllowedException() {
+        MockNotAllowedException() {
             super("Allow app to mock location in developer settings.");
         }
     }

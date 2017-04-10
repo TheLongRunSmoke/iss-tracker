@@ -21,6 +21,7 @@ public class DialogHelper {
         builder.setMessage(messageResId);
         builder.setPositiveButton(positiveButtonResId, positiveClickListener);
         builder.setNegativeButton(negativeButtonResId, negativeClickListener);
+        builder.setCancelable(false);
         return builder.create();
     }
 }

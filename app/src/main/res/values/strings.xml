@@ -34,6 +34,10 @@
 
     <!-- Dialog -->
     <string name="neutral_label" translatable="false">OK</string>
+    <string name="dialog_perm_denied_message">Rough device location need for notify you about ISS passes. It\'s not send anywhere.</string>
+    <string name="dialog_perm_denied_positive">Allow detect location</string>
+    <string name="dialog_perm_denied_negative">Set location by yourself</string>
+    <string name="dialog_provider_disabled_message">Location provider is off. Enable it on next screen.</string>
 
     <!-- Example settings for Notifications -->
     <string name="pref_header_notifications">Notifications</string>
