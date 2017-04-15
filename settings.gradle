@@ -1,1 +1,1 @@
-include ':app'
+include ':app', ':xiphos', ':xiphos-compiler', ':xiphos-annotations'
