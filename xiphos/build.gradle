@@ -33,10 +33,3 @@ dependencies {
     compile project(':xiphos-annotations')
     testCompile 'junit:junit:4.12'
 }
-
-task processorTask(type: Exec) {
-    commandLine "cmd", "copy", "..\\xiphos-compiler\\build\\libs\\xiphos-compiler.jar", "libs\\", "/y"
-}
-
-processorTask.dependsOn(':xiphos-compiler:build')
-preBuild.dependsOn(processorTask)

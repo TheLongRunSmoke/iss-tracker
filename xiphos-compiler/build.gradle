@@ -5,6 +5,7 @@ targetCompatibility = 1.7
 
 dependencies {
     compile project(':xiphos-annotations')
+    compile 'com.squareup:javapoet:1.8.0'
     //compile 'com.google.auto:auto-common:0.6'
     //compileOnly 'com.google.auto.service:auto-service:1.0-rc2'
 }

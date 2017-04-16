@@ -1,10 +1,14 @@
 package ru.tlrs.iss.models;
 
+import ru.tlrs.xiphos.annotations.Field;
 import ru.tlrs.xiphos.annotations.Table;
 
 @Table
 public class TLE {
+
+    @Field
     private int mTimestamp;
+    @Field(column = "tle")
     private String mTLE;
 
     public TLE(int timestamp, String tle) {
