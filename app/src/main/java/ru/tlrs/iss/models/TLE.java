@@ -6,9 +6,9 @@ import ru.tlrs.xiphos.annotations.Table;
 @Table
 public class TLE {
 
-    @Field(column = "timestamp")
+    @Field
     private int mTimestamp;
-    @Field(column = "tle")
+    @Field
     private String mTLE;
 
     public TLE(int timestamp, String tle) {
