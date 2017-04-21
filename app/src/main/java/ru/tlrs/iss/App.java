@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import android.util.Log;
 
+import ru.tlrs.xiphos.Xiphos;
 import timber.log.Timber;
 
 public class App extends Application {
@@ -14,6 +15,7 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         mAppContext = this.getApplicationContext();
+        Xiphos.init(getAppContext());
         if (BuildConfig.DEBUG) {
             Timber.plant(new Timber.DebugTree());
         } else {
