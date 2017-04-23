@@ -1,12 +1,8 @@
 package ru.tlrs.xiphos;
 
 import android.content.Context;
-import android.util.Log;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-
-import ru.tlrs.xiphos.ancestors.AbstractCreator;
+import ru.tlrs.xiphos.utils.GeneratedClassObtainer;
 
 public class Xiphos {
 
@@ -32,27 +28,7 @@ public class Xiphos {
     }
 
     public static void init(Context context){
-        Class<?> clazz = null;
-        AbstractCreator creator = null;
-        try {
-            clazz = Class.forName("ru.tlrs.xiphos.generated.Creator");
-            Constructor<?> constructor = clazz.getConstructor(Context.class);
-            creator = (AbstractCreator) constructor.newInstance(context);
-        } catch (ClassNotFoundException e) {
-            Log.w(LOG_TAG, "ClassNotFoundException");
-        } catch (NoSuchMethodException e) {
-            Log.w(LOG_TAG, "NoSuchMethodException");
-        } catch (InstantiationException e) {
-            Log.w(LOG_TAG, "InstantiationException");
-        } catch (IllegalAccessException e) {
-            Log.w(LOG_TAG, "IllegalAccessException");
-        } catch (InvocationTargetException e) {
-            Log.w(LOG_TAG, "InvocationTargetException");
-        }
-        if(creator != null){
-            
-        }
-
+        GeneratedClassObtainer.getCreator();
     }
 
 }
