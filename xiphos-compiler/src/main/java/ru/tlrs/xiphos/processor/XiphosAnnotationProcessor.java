@@ -62,7 +62,7 @@ public class XiphosAnnotationProcessor extends AbstractProcessor {
         array.add(delimiterJoin(tablesInitQueries.iterator(), ",\n")).add("\n");
         array.add("}");
 
-        FieldSpec init = FieldSpec.builder(String[].class, "TABLE_INIT")
+        FieldSpec init = FieldSpec.builder(String[].class, "QUERIES")
                 .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
                 .initializer(array.build())
                 .build();

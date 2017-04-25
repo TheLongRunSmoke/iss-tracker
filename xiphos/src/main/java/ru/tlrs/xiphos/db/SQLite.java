@@ -4,8 +4,13 @@ import android.content.Context;
 import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
+
+import ru.tlrs.xiphos.utils.GeneratedClassObtainer;
 
 public class SQLite implements DBHelper{
+
+    private static final String LOG_TAG = SQLite.class.getSimpleName();
 
     private static volatile SQLite sInstance;
 
@@ -14,17 +19,17 @@ public class SQLite implements DBHelper{
 
     public class SQLiteHelper extends SQLiteOpenHelper implements DBOpenHelper{
 
-        public SQLiteHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
-            super(context, name, factory, version);
-        }
-
-        public SQLiteHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version, DatabaseErrorHandler errorHandler) {
-            super(context, name, factory, version, errorHandler);
+        public SQLiteHelper(Context context, String name, SQLiteDatabase.CursorFactory cursorFactory, DatabaseErrorHandler errorHandler) {
+            super(context, name, cursorFactory, 1, errorHandler);
         }
 
         @Override
         public void onCreate(SQLiteDatabase db) {
-
+            Log.d(LOG_TAG, "onCreate()");
+            String[] queries = GeneratedClassObtainer.getCreator().getQueries();
+            for (String query: queries){
+                db.execSQL(query);
+            }
         }
 
         @Override

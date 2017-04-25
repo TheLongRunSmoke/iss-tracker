@@ -2,9 +2,9 @@ package ru.tlrs.xiphos.utils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Locale;
 
 import ru.tlrs.xiphos.ancestors.AbstractCreator;
+import ru.tlrs.xiphos.utils.DevTimeExceptions.*;
 
 public class GeneratedClassObtainer {
 
@@ -40,20 +40,5 @@ public class GeneratedClassObtainer {
             throw new InstantiatingException(clazz.getSimpleName(), e.getClass().getSimpleName());
         }
         return instance;
-    }
-
-    /*
-     * Dev-time Exceptions
-     */
-    private static class XiphosCompilerException extends RuntimeException{
-        XiphosCompilerException(String className) {
-            super(String.format(Locale.ENGLISH, "%s class not found. Check xiphos-compiler.", className));
-        }
-    }
-
-    private static class InstantiatingException extends RuntimeException{
-        InstantiatingException(String className, String exception) {
-            super(String.format(Locale.ENGLISH, "%s for %s class.", exception, className));
-        }
     }
 }
