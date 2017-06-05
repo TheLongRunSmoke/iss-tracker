@@ -8,11 +8,13 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 
 import java.util.Locale;
 import java.util.Random;
+
+import javax.annotation.Nullable;
+import javax.inject.Inject;
 
 import ru.tlrs.iss.App;
 import ru.tlrs.iss.BuildConfig;
@@ -21,7 +23,8 @@ import timber.log.Timber;
 
 public final class LocationProvider {
 
-    private static volatile LocationProvider sInstance;
+    @Inject
+    Config config;
 
     private static final String LOCATION_MANAGER = android.location.LocationManager.NETWORK_PROVIDER;
     private final LocationManager mLocationManager;
@@ -29,28 +32,16 @@ public final class LocationProvider {
     private LocationListener mListener;
     private OnLocationChangeListener mCallback;
 
-    public static LocationProvider getInstance() {
-        LocationProvider localInstance = sInstance;
-        if (localInstance == null) {
-            synchronized (LocationProvider.class) {
-                localInstance = sInstance;
-                if (localInstance == null) {
-                    sInstance = localInstance = new LocationProvider();
-                }
-            }
-        }
-        return localInstance;
-    }
-
-    private LocationProvider() {
-        mLocationManager = (LocationManager) App.getAppContext().getSystemService(Context.LOCATION_SERVICE);
+    public LocationProvider(Context context) {
+        App.getComponent().inject(this);
+        mLocationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
         mListener = new NetworkLocationListener();
         if (isPermissionGranted())
             setCurrentLocation(mLocationManager.getLastKnownLocation(LOCATION_MANAGER));
     }
 
     /**
-     * Setup LocationListener. In debug, mock.
+     * Setup LocationListener. In debug - mock.
      */
     public void requestUpdate() {
         if (isPermissionGranted()) {
@@ -73,10 +64,10 @@ public final class LocationProvider {
     /**
      * Try to obtain user location, if provider return null, use saved location.
      *
-     * @return user location, can be null.
+     * @return user location.
      */
-    public Location getCurrentLocation() {
-        Location result = (mCurrentLocation == null) ? Config.getInstance().getSavedLocation() : mCurrentLocation;
+    public @Nullable Location getCurrentLocation() {
+        Location result = (mCurrentLocation == null) ? config.getSavedLocation() : mCurrentLocation;
         if (result == null) {
             Timber.d("getCurrentLocation(): null");
             return null;
@@ -97,7 +88,7 @@ public final class LocationProvider {
         }
         Timber.d(String.format(Locale.ENGLISH, "setCurrentLocation(): lat = %f, long = %f", location.getLatitude(), location.getLongitude()));
         mCurrentLocation = location;
-        Config.getInstance().setSavedLocation(location);
+        config.setSavedLocation(location);
     }
 
     /**
@@ -115,7 +106,7 @@ public final class LocationProvider {
      * @return true if granted.
      */
     private boolean isPermissionGranted() {
-        return ContextCompat.checkSelfPermission(App.getAppContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+        return ContextCompat.checkSelfPermission(App.getComponent().getAppContext(), Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
 
     /**

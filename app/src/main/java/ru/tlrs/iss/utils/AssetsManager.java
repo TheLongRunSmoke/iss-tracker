@@ -26,7 +26,7 @@ public class AssetsManager {
     public static void unpackFromAssets(String fileName) {
         if (!AssetsManager.isAssetExtracted(fileName)) {
             Timber.d("unpackFromAssets(): begin asset extraction.");
-            AssetManager assetManager = App.getAppContext().getAssets();
+            AssetManager assetManager = App.getComponent().getAppContext().getAssets();
             InputStream in;
             OutputStream out;
             File dir = new File(AssetsManager.getAssetsPath(null));
@@ -60,8 +60,8 @@ public class AssetsManager {
      */
     private static String getAppDirectory() {
         String result = "";
-        PackageManager m = App.getAppContext().getPackageManager();
-        String s = App.getAppContext().getPackageName();
+        PackageManager m = App.getComponent().getAppContext().getPackageManager();
+        String s = App.getComponent().getAppContext().getPackageName();
         PackageInfo p;
         try {
             p = m.getPackageInfo(s, 0);

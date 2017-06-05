@@ -12,15 +12,21 @@ public class SQLite implements DBHelper{
 
     private static final String LOG_TAG = SQLite.class.getSimpleName();
 
-    private static volatile SQLite sInstance;
+    private SQLiteHelper mHelper;
 
-    private SQLite() {
+    public SQLite(Context context, String dbName) {
+        mHelper = new SQLiteHelper(context, dbName, null);
+    }
+
+    @Override
+    public SQLiteDatabase getWritableDatabase() {
+        return mHelper.getWritableDatabase();
     }
 
     public class SQLiteHelper extends SQLiteOpenHelper implements DBOpenHelper{
 
-        public SQLiteHelper(Context context, String name, SQLiteDatabase.CursorFactory cursorFactory, DatabaseErrorHandler errorHandler) {
-            super(context, name, cursorFactory, 1, errorHandler);
+        public SQLiteHelper(Context context, String name, DatabaseErrorHandler errorHandler) {
+            super(context, name, null, 1, errorHandler);
         }
 
         @Override
@@ -34,7 +40,7 @@ public class SQLite implements DBHelper{
 
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
+            // Stripped.
         }
     }
 }

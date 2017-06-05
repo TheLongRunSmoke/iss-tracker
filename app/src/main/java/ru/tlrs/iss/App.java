@@ -1,21 +1,27 @@
 package ru.tlrs.iss;
 
 import android.app.Application;
-import android.content.Context;
 import android.util.Log;
 
+import dagger.Module;
+import ru.tlrs.iss.di.AppComponent;
+import ru.tlrs.iss.di.AppModule;
+import ru.tlrs.iss.di.DaggerAppComponent;
 import ru.tlrs.xiphos.Xiphos;
 import timber.log.Timber;
 
+@Module
 public class App extends Application {
 
-    private static Context mAppContext;
+    private static AppComponent mComponent;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        mAppContext = this.getApplicationContext();
-        Xiphos.init(getAppContext());
+        mComponent = DaggerAppComponent.builder()
+                .appModule(new AppModule(this))
+                .build();
+        Xiphos.init(this.getApplicationContext(), "main.db");
         if (BuildConfig.DEBUG) {
             Timber.plant(new Timber.DebugTree());
         } else {
@@ -44,7 +50,7 @@ public class App extends Application {
         }
     }
 
-    public static Context getAppContext(){
-        return App.mAppContext;
+    public static AppComponent getComponent() {
+        return App.mComponent;
     }
 }

@@ -32,8 +32,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import ru.tlrs.iss.App;
 import ru.tlrs.iss.Config;
 import ru.tlrs.iss.R;
 import ru.tlrs.iss.activities.SettingsActivity;
@@ -44,6 +47,11 @@ import timber.log.Timber;
 
 
 public class MapFragment extends Fragment {
+
+    @Inject
+    Config config;
+    @Inject
+    LocationProvider locationProvider;
 
     @BindView(R.id.mapView)
     MapView mMap;
@@ -65,6 +73,8 @@ public class MapFragment extends Fragment {
         // Inflate layout.
         View view = inflater.inflate(R.layout.fragment_map, container, false);
         ButterKnife.bind(this, view);
+        // Inject dependencies.
+        App.getComponent().inject(this);
         // Config map.
         mMap.setUseDataConnection(false);
         mMap.setTileProvider(configTileSource());
@@ -100,9 +110,9 @@ public class MapFragment extends Fragment {
      * Check permission and run location routing.
      */
     private void getLocation() {
-        if (Config.getInstance().isLocationUseEnable()) {
+        if (config.isLocationUseEnable()) {
             // If location unknown or needs to be update.
-            if (Config.getInstance().isSavedLocationZero() || Config.getInstance().isUpdateLocationOnStartup()) {
+            if (config.isSavedLocationZero() || config.isUpdateLocationOnStartup()) {
                 Timber.d("getLocation(): try to update location.");
                 if (isPermissionGranted(Manifest.permission.ACCESS_COARSE_LOCATION)) {
                     locationPermissionGranted();
@@ -110,7 +120,7 @@ public class MapFragment extends Fragment {
                     requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, COARSE_LOCATION_PERMISSION_REQUEST);
                 }
             } else {
-                drawUserLocation(Config.getInstance().getSavedLocation());
+                drawUserLocation(config.getSavedLocation());
             }
         }
     }
@@ -131,14 +141,14 @@ public class MapFragment extends Fragment {
             List<Overlay> overlays = mMap.getOverlays();
             if (overlays.size() == 0) {
                 overlays.add(0, userOverlay);
-            }else {
+            } else {
                 overlays.set(0, userOverlay);
             }
         }
     }
 
     /**
-     *  Animated zoom to specified coordinate.
+     * Animated zoom to specified coordinate.
      *
      * @param location location.
      */
@@ -150,7 +160,7 @@ public class MapFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         // Catch user returned from system settings, after enabling location provider,
-        if (requestCode == PROVIDER_ENABLE_REQUEST){
+        if (requestCode == PROVIDER_ENABLE_REQUEST) {
             getLocation();
         }
     }
@@ -184,19 +194,19 @@ public class MapFragment extends Fragment {
      */
     private void locationPermissionGranted() {
         Timber.d("locationPermissionGranted()");
-        if (LocationProvider.getInstance().isProviderEnabled()) {
-            Location location = LocationProvider.getInstance().getCurrentLocation();
+        if (locationProvider.isProviderEnabled()) {
+            Location location = locationProvider.getCurrentLocation();
             if (location != null) drawUserLocation(location);
-            LocationProvider.getInstance().setLocationChangeListener(new LocationProvider.OnLocationChangeListener() {
+            locationProvider.setLocationChangeListener(new LocationProvider.OnLocationChangeListener() {
                 @Override
                 public void onLocationChange(Location location) {
                     drawUserLocation(location);
                 }
             });
-            LocationProvider.getInstance().requestUpdate();
+            locationProvider.requestUpdate();
         } else {
             Timber.d("locationPermissionGranted(): provider disabled");
-            AlertDialog dialog = DialogHelper.createOKDialog(getActivity(), R.string.dialog_provider_disabled_message, new DialogInterface.OnClickListener(){
+            AlertDialog dialog = DialogHelper.createOKDialog(getActivity(), R.string.dialog_provider_disabled_message, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     startActivityForResult(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS), PROVIDER_ENABLE_REQUEST);
@@ -224,7 +234,7 @@ public class MapFragment extends Fragment {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         // Send user to location preference.
-                        startActivity(new Intent(getActivity(), SettingsActivity.class).putExtra(PreferenceActivity.EXTRA_SHOW_FRAGMENT, SettingsActivity.LocationPreferenceFragment.class.getName()));
+                        startActivity(new Intent(getActivity(), SettingsActivity.class).setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT).putExtra(PreferenceActivity.EXTRA_SHOW_FRAGMENT, SettingsActivity.LocationPreferenceFragment.class.getName()));
                     }
                 }).show();
     }

@@ -13,5 +13,6 @@ public @interface Field {
         TEXT,
         INTEGER,
         REAL,
+        OBJECT
     }
 }

@@ -10,7 +10,7 @@ public class DevTimeExceptions {
         }
     }
 
-    public static class InstantiatingException extends RuntimeException{
+    static class InstantiatingException extends RuntimeException{
         InstantiatingException(String className, String exception) {
             super(String.format(Locale.ENGLISH, "%s for %s class.", exception, className));
         }

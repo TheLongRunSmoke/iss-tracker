@@ -17,7 +17,6 @@ import android.view.MenuItem;
 import java.util.List;
 
 import ru.tlrs.iss.App;
-import ru.tlrs.iss.Config;
 import ru.tlrs.iss.R;
 import ru.tlrs.iss.dialogs.DialogHelper;
 import ru.tlrs.iss.fragments.PreferenceListenerFragment;
@@ -69,9 +68,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
      */
     public static class LocationPreferenceFragment extends PreferenceListenerFragment{
 
-        public static final String LAT = App.getAppContext().getResources().getString(R.string.pref_latitude);
-        public static final String LONG = App.getAppContext().getResources().getString(R.string.pref_longitude);
-        public static final String UPDATE = App.getAppContext().getResources().getString(R.string.pref_location_update);
+        public static final String LAT = App.getComponent().getResources().getString(R.string.pref_latitude);
+        public static final String LONG = App.getComponent().getResources().getString(R.string.pref_longitude);
+        public static final String UPDATE = App.getComponent().getResources().getString(R.string.pref_location_update);
 
 
         @Override
@@ -89,7 +88,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         public boolean onPreferenceChange(final Preference preference, Object value) {
             boolean result = true;
             String newValue = value.toString();
-            Location savedLocation = Config.getInstance().getSavedLocation();
+            Location savedLocation = config.getSavedLocation();
             if (TextUtils.equals(preference.getKey(), LAT)) {
                 double absValue = abs(Double.parseDouble(newValue));
                 if (absValue > 82) {
@@ -131,18 +130,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             return result;
         }
 
-        @Override
-        public boolean onOptionsItemSelected(MenuItem item) {
-            int id = item.getItemId();
-            if (id == android.R.id.home) {
-                startActivity(new Intent(getActivity(), SettingsActivity.class));
-                return true;
-            }
-            return super.onOptionsItemSelected(item);
-        }
-
         private void disableLocationUpdate(){
-            Config.getInstance().setLocationUpdateOnStartup(false);
+            config.setLocationUpdateOnStartup(false);
         }
     }
 
@@ -157,16 +146,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             addPreferencesFromResource(R.xml.pref_notification);
             setHasOptionsMenu(true);
             bindPreferenceSummaryToValue(findPreference("notifications_new_message_ringtone"), this);
-        }
-
-        @Override
-        public boolean onOptionsItemSelected(MenuItem item) {
-            int id = item.getItemId();
-            if (id == android.R.id.home) {
-                startActivity(new Intent(getActivity(), SettingsActivity.class));
-                return true;
-            }
-            return super.onOptionsItemSelected(item);
         }
     }
 }

@@ -1,13 +1,27 @@
 package ru.tlrs.iss.fragments;
 
+import android.content.Intent;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.view.MenuItem;
 import android.widget.ListAdapter;
 
+import javax.inject.Inject;
+
+import ru.tlrs.iss.App;
 import ru.tlrs.iss.Config;
+import ru.tlrs.iss.activities.SettingsActivity;
+import ru.tlrs.iss.di.AppModule;
 
 public class PreferenceListenerFragment extends PreferenceFragment implements Preference.OnPreferenceChangeListener {
+
+    @Inject protected Config config;
+
+    public PreferenceListenerFragment() {
+        super();
+        App.getComponent().inject(this);
+    }
 
     protected void performClick(Preference preference){
         ListAdapter listAdapter = getPreferenceScreen().getRootAdapter();
@@ -76,10 +90,20 @@ public class PreferenceListenerFragment extends PreferenceFragment implements Pr
 
     protected static void bindPreferenceSummaryToValue(Preference preference, Preference.OnPreferenceChangeListener listener) {
         preference.setOnPreferenceChangeListener(listener);
-        listener.onPreferenceChange(preference, Config.getInstance().getPreferences().getString(preference.getKey(), ""));
+        listener.onPreferenceChange(preference, App.getComponent().getPreferences().getString(preference.getKey(), ""));
     }
 
     public void updatePreferenceSummary(Preference preference){
-        onPreferenceChange(preference, Config.getInstance().getPreferences().getString(preference.getKey(), ""));
+        onPreferenceChange(preference, config.getPreferences().getString(preference.getKey(), ""));
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            getActivity().onBackPressed();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

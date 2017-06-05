@@ -1,34 +1,56 @@
 package ru.tlrs.xiphos;
 
 import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 
+import ru.tlrs.xiphos.db.DBHelper;
+import ru.tlrs.xiphos.db.DBOpenHelper;
+import ru.tlrs.xiphos.db.SQLite;
 import ru.tlrs.xiphos.utils.GeneratedClassObtainer;
 
 public class Xiphos {
 
     private static final String LOG_TAG = Xiphos.class.getSimpleName();
 
-    private static volatile Xiphos sInstance;
+    private static volatile DBHelper sHelper;
 
-    private static Xiphos getInstance(Context context) {
-        Xiphos localInstance = sInstance;
+    private static volatile SQLiteDatabase sDatabase;
+
+    public static void init(Context context, String dbName) {
+        initHelper(context, dbName);
+        prepareDatabase();
+    }
+
+    public static void close(){
+        sDatabase.close();
+    }
+
+    private static void initHelper(Context context, String dbName) {
+        DBHelper localInstance = sHelper;
         if (localInstance == null) {
-            synchronized (Xiphos.class) {
-                localInstance = sInstance;
+            synchronized (DBHelper.class) {
+                localInstance = sHelper;
                 if (localInstance == null) {
-                    sInstance = localInstance = new Xiphos(context);
+                    sHelper = new SQLite(context, dbName);
                 }
             }
         }
-        return localInstance;
     }
 
-    private Xiphos(Context context) {
-
+    private static void prepareDatabase() {
+        SQLiteDatabase localInstance = sDatabase;
+        if (localInstance == null) {
+            synchronized (SQLiteDatabase.class) {
+                localInstance = sDatabase;
+                if (localInstance == null) {
+                    sDatabase = sHelper.getWritableDatabase();
+                }
+            }
+        }
     }
 
-    public static void init(Context context){
-        GeneratedClassObtainer.getCreator();
+    public static SQLiteDatabase getWritableDatabase(){
+        return Xiphos.sDatabase;
     }
 
 }
